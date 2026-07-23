@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>도윤이 기록장</title>
+<style>
+  :root{
+    --paper:#F6F4EE;
+    --card:#FFFFFF;
+    --ink:#242522;
+    --ink-soft:#6B6A63;
+    --line:#DEDBCF;
+    --accent:#3D6657;
+    --accent-soft:#E4EDE7;
+    --warn:#B5652F;
+    --warn-soft:#F6E9DC;
+    --danger:#A6453B;
+    --danger-soft:#F7E6E3;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    line-height:1.6;
+    padding:32px 16px 80px;
+  }
+  .wrap{max-width:720px;margin:0 auto;}
+  header{margin-bottom:28px;display:flex;justify-content:space-between;align-items:flex-start;}
+  header h1{
+    font-family:Georgia,"Nanum Myeongjo",serif;
+    font-size:28px;
+    font-weight:normal;
+    margin:0 0 4px;
+    letter-spacing:-0.01em;
+  }
+  header p{margin:0;color:var(--ink-soft);font-size:14px;}
+  #logout-btn{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:7px 12px;font-size:12px;color:var(--ink-soft);cursor:pointer;height:fit-content;}
+  #logout-btn:hover{color:var(--ink);border-color:var(--ink-soft);}
+
+  #login-screen{max-width:360px;margin:80px auto;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:28px;}
+  #login-screen h1{font-family:Georgia,"Nanum Myeongjo",serif;font-size:22px;font-weight:normal;margin:0 0 6px;}
+  #login-screen p{color:var(--ink-soft);font-size:13px;margin:0 0 20px;}
+  #login-screen input{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:14px;margin-bottom:10px;}
+  #login-screen button{width:100%;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:11px;font-size:14px;cursor:pointer;margin-top:6px;}
+  #login-error{color:var(--danger);font-size:13px;margin-top:10px;display:none;}
+  #app{display:none;}
+
+  .strip{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(14px,1fr));
+    gap:4px;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:14px;
+    margin-bottom:24px;
+  }
+  .strip-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;grid-column:1/-1;}
+  .strip-head span{font-size:13px;color:var(--ink-soft);}
+  .dot{aspect-ratio:1;border-radius:3px;background:var(--line);position:relative;cursor:default;}
+  .dot.has-entry{background:var(--accent);}
+  .dot.has-discipline{background:var(--warn);}
+  .dot.today{outline:2px solid var(--ink);outline-offset:1px;}
+  .legend{grid-column:1/-1;display:flex;gap:16px;margin-top:10px;font-size:12px;color:var(--ink-soft);}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px;}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:16px;}
+  .card h2{font-size:15px;font-weight:600;margin:0 0 16px;}
+  label{display:block;font-size:13px;color:var(--ink-soft);margin:14px 0 6px;}
+  label:first-of-type{margin-top:0;}
+  input[type=date], textarea{
+    width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 11px;
+    font-size:14px;font-family:inherit;color:var(--ink);background:var(--paper);
+  }
+  textarea{resize:vertical;min-height:64px;}
+  .mood-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .mood-btn{border:1px solid var(--line);border-radius:20px;padding:7px 14px;background:var(--paper);font-size:13px;cursor:pointer;color:var(--ink-soft);}
+  .mood-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .discipline-toggle{display:flex;align-items:center;gap:8px;margin-top:14px;}
+  .discipline-toggle input{width:16px;height:16px;}
+  .discipline-toggle label{margin:0;font-size:13px;color:var(--ink);}
+  .discipline-detail{display:none;margin-top:10px;}
+  .discipline-detail.show{display:block;}
+  .btn-row{display:flex;gap:8px;margin-top:18px;}
+  button.primary{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:14px;cursor:pointer;}
+  button.primary:hover{opacity:0.92;}
+  button.ghost{background:none;border:1px solid var(--line);border-radius:8px;padding:10px 18px;font-size:14px;cursor:pointer;color:var(--ink-soft);}
+  button.ghost:hover{border-color:var(--ink-soft);color:var(--ink);}
+
+  .entry{border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:10px;background:var(--card);}
+  .entry.flagged{border-left:3px solid var(--warn);}
+  .entry-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+  .entry-date{font-family:Georgia,"Nanum Myeongjo",serif;font-size:16px;}
+  .entry-time{font-size:12px;color:var(--ink-soft);}
+  .entry-mood{display:inline-block;font-size:12px;background:var(--accent-soft);color:var(--accent);padding:2px 9px;border-radius:12px;margin-bottom:8px;}
+  .entry-mood.flag{background:var(--warn-soft);color:var(--warn);}
+  .entry-body{font-size:14px;white-space:pre-wrap;}
+  .entry-discipline{margin-top:10px;padding:10px 12px;background:var(--warn-soft);border-radius:8px;font-size:13px;color:#5c3c1e;white-space:pre-wrap;}
+  .entry-actions{display:flex;gap:12px;margin-top:10px;}
+  .entry-actions button{border:none;background:none;color:var(--ink-soft);font-size:12px;cursor:pointer;padding:0;}
+  .entry-actions button:hover{color:var(--danger);}
+  .empty{color:var(--ink-soft);font-size:14px;text-align:center;padding:30px 0;}
+  .section-title{font-size:13px;color:var(--ink-soft);margin:26px 0 10px;letter-spacing:0.02em;}
+  .toolbar{display:flex;justify-content:flex-end;gap:8px;margin-bottom:6px;}
+  .toolbar button{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--ink-soft);cursor:pointer;}
+  .toolbar button:hover{color:var(--ink);border-color:var(--ink-soft);}
+  .sync-note{font-size:12px;color:var(--ink-soft);text-align:center;margin-top:6px;}
+  @media print{
+    .card.entry-form, .toolbar, .strip, #logout-btn{display:none;}
+    body{background:#fff;padding:0;}
+    .entry{break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <h1>도윤이 기록장</h1>
+  <p>등록된 계정으로 로그인하세요.</p>
+  <input type="email" id="login-email" placeholder="이메일">
+  <input type="password" id="login-pw" placeholder="비밀번호">
+  <button id="login-btn">로그인</button>
+  <div id="login-error">로그인에 실패했습니다. 이메일/비밀번호를 확인해주세요.</div>
+</div>
+
+<div class="wrap" id="app">
+  <header>
+    <div>
+      <h1>도윤이 기록장</h1>
+      <p>매일의 모습과 있었던 일을 남겨두는 개인 기록입니다.</p>
+    </div>
+    <button id="logout-btn">로그아웃</button>
+  </header>
+
+  <div class="strip" id="strip"></div>
+  <div class="sync-note" id="sync-note">동기화됨</div>
+
+  <div class="card entry-form">
+    <h2 id="form-title">오늘 기록하기</h2>
+    <label for="f-date">날짜</label>
+    <input type="date" id="f-date">
+
+    <label>아이 상태</label>
+    <div class="mood-row" id="mood-row">
+      <button type="button" class="mood-btn" data-mood="밝음">밝음</button>
+      <button type="button" class="mood-btn" data-mood="보통">보통</button>
+      <button type="button" class="mood-btn" data-mood="예민함">예민함</button>
+      <button type="button" class="mood-btn" data-mood="힘들어함">힘들어함</button>
+      <button type="button" class="mood-btn" data-mood="아픔">아픔</button>
+    </div>
+
+    <label for="f-event">있었던 일</label>
+    <textarea id="f-event" placeholder="오늘 도윤이에게 있었던 일, 한 말, 행동 등을 편하게 적어주세요"></textarea>
+
+    <div class="discipline-toggle">
+      <input type="checkbox" id="f-flag">
+      <label for="f-flag">훈육/체벌이 있었던 날</label>
+    </div>
+    <div class="discipline-detail" id="discipline-detail">
+      <label for="f-discipline">훈육/체벌 내용</label>
+      <textarea id="f-discipline" placeholder="누가, 어떤 상황에서, 어떻게 했는지를 최대한 구체적으로 적어주세요"></textarea>
+    </div>
+
+    <label for="f-note">기타 메모</label>
+    <textarea id="f-note" placeholder="그 외 남기고 싶은 것"></textarea>
+
+    <div class="btn-row">
+      <button class="primary" id="save-btn">저장</button>
+      <button class="ghost" id="cancel-edit" style="display:none;">취소</button>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <button id="export-btn">전체 내보내기 (txt)</button>
+    <button id="print-btn">인쇄</button>
+  </div>
+
+  <div id="entry-list"></div>
+</div>
+
+<script type="module">
+/* ====================================================================
+   설정: 아래 firebaseConfig 값을 본인의 Firebase 프로젝트 값으로 교체하세요.
+   Firebase 콘솔 > 프로젝트 설정 > 일반 > 내 앱 에서 확인할 수 있습니다.
+   ==================================================================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyBCjQIuafgq8Pw_wHTQjp8cwf8Q95qhXqw",
+  authDomain: "mylog-f194a.firebaseapp.com",
+  projectId: "mylog-f194a",
+  storageBucket: "mylog-f194a.firebasestorage.app",
+  messagingSenderId: "712810442099",
+  appId: "1:712810442099:web:6aaab546bd52775a122906"
+};
+/* ==================================================================== */
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getFirestore, collection, addDoc, updateDoc, deleteDoc, doc,
+  onSnapshot, query, orderBy
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let entries = [];
+let editingId = null;
+let selectedMood = "";
+let currentUid = null;
+let unsubscribe = null;
+
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function fmtDate(dateStr){
+  const [y,m,d] = dateStr.split("-");
+  const days = ["일","월","화","수","목","금","토"];
+  const dt = new Date(dateStr+"T00:00:00");
+  return y+"."+m+"."+d+" ("+days[dt.getDay()]+")";
+}
+function escapeHtml(str){
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+document.getElementById("login-btn").addEventListener("click", async ()=>{
+  const email = document.getElementById("login-email").value.trim();
+  const pw = document.getElementById("login-pw").value;
+  document.getElementById("login-error").style.display = "none";
+  try{
+    await signInWithEmailAndPassword(auth, email, pw);
+  }catch(e){
+    document.getElementById("login-error").style.display = "block";
+  }
+});
+
+document.getElementById("logout-btn").addEventListener("click", ()=>signOut(auth));
+
+onAuthStateChanged(auth, (user)=>{
+  if(user){
+    currentUid = user.uid;
+    document.getElementById("login-screen").style.display = "none";
+    document.getElementById("app").style.display = "block";
+    subscribeEntries();
+  }else{
+    currentUid = null;
+    document.getElementById("login-screen").style.display = "block";
+    document.getElementById("app").style.display = "none";
+    if(unsubscribe) unsubscribe();
+  }
+});
+
+function subscribeEntries(){
+  const q = query(collection(db, "users", currentUid, "entries"), orderBy("date", "desc"));
+  unsubscribe = onSnapshot(q, (snapshot)=>{
+    entries = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    document.getElementById("sync-note").textContent = "동기화됨 · 마지막 업데이트 " + new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"});
+    render();
+  }, (err)=>{
+    document.getElementById("sync-note").textContent = "동기화 오류: 인터넷 연결을 확인해주세요";
+  });
+}
+
+function resetForm(){
+  editingId = null;
+  document.getElementById("form-title").textContent = "오늘 기록하기";
+  document.getElementById("f-date").value = todayStr();
+  document.getElementById("f-event").value = "";
+  document.getElementById("f-discipline").value = "";
+  document.getElementById("f-note").value = "";
+  document.getElementById("f-flag").checked = false;
+  document.getElementById("discipline-detail").classList.remove("show");
+  selectedMood = "";
+  document.querySelectorAll(".mood-btn").forEach(b=>b.classList.remove("active"));
+  document.getElementById("cancel-edit").style.display = "none";
+}
+
+function loadIntoForm(entry){
+  editingId = entry.id;
+  document.getElementById("form-title").textContent = "기록 수정";
+  document.getElementById("f-date").value = entry.date;
+  document.getElementById("f-event").value = entry.event || "";
+  document.getElementById("f-discipline").value = entry.disciplineDetail || "";
+  document.getElementById("f-note").value = entry.note || "";
+  document.getElementById("f-flag").checked = !!entry.disciplineFlag;
+  document.getElementById("discipline-detail").classList.toggle("show", !!entry.disciplineFlag);
+  selectedMood = entry.mood || "";
+  document.querySelectorAll(".mood-btn").forEach(b=>{
+    b.classList.toggle("active", b.dataset.mood === selectedMood);
+  });
+  document.getElementById("cancel-edit").style.display = "inline-block";
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+document.getElementById("mood-row").addEventListener("click", (e)=>{
+  const btn = e.target.closest(".mood-btn");
+  if(!btn) return;
+  selectedMood = btn.dataset.mood;
+  document.querySelectorAll(".mood-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+});
+
+document.getElementById("f-flag").addEventListener("change", (e)=>{
+  document.getElementById("discipline-detail").classList.toggle("show", e.target.checked);
+});
+
+document.getElementById("save-btn").addEventListener("click", async ()=>{
+  const date = document.getElementById("f-date").value;
+  if(!date){ alert("날짜를 선택해주세요."); return; }
+  const event = document.getElementById("f-event").value.trim();
+  const disciplineFlag = document.getElementById("f-flag").checked;
+  const disciplineDetail = document.getElementById("f-discipline").value.trim();
+  const note = document.getElementById("f-note").value.trim();
+
+  if(!event && !note && !disciplineDetail){
+    alert("내용을 입력해주세요.");
+    return;
+  }
+
+  const payload = { date, mood:selectedMood, event, disciplineFlag, disciplineDetail, note };
+
+  try{
+    if(editingId){
+      await updateDoc(doc(db, "users", currentUid, "entries", editingId), payload);
+    }else{
+      payload.createdAt = new Date().toISOString();
+      await addDoc(collection(db, "users", currentUid, "entries"), payload);
+    }
+    resetForm();
+  }catch(e){
+    alert("저장에 실패했습니다. 인터넷 연결을 확인해주세요.");
+  }
+});
+
+document.getElementById("cancel-edit").addEventListener("click", resetForm);
+
+document.getElementById("entry-list").addEventListener("click", async (e)=>{
+  const editBtn = e.target.closest("[data-edit]");
+  const delBtn = e.target.closest("[data-del]");
+  if(editBtn){
+    const entry = entries.find(en=>en.id===editBtn.dataset.edit);
+    if(entry) loadIntoForm(entry);
+  }
+  if(delBtn){
+    if(confirm("이 기록을 삭제할까요?")){
+      try{
+        await deleteDoc(doc(db, "users", currentUid, "entries", delBtn.dataset.del));
+      }catch(e){
+        alert("삭제에 실패했습니다.");
+      }
+    }
+  }
+});
+
+document.getElementById("export-btn").addEventListener("click", ()=>{
+  const sorted = [...entries].sort((a,b)=> a.date.localeCompare(b.date) || (a.createdAt||"").localeCompare(b.createdAt||""));
+  let text = "도윤이 기록장 전체 내보내기\n생성일: " + new Date().toLocaleString("ko-KR") + "\n\n";
+  sorted.forEach(en=>{
+    text += "──────────────────────\n";
+    text += fmtDate(en.date) + (en.mood ? "  [상태: "+en.mood+"]" : "") + "\n";
+    if(en.event) text += "있었던 일: " + en.event + "\n";
+    if(en.disciplineFlag) text += "훈육/체벌: " + (en.disciplineDetail || "(내용 미기재)") + "\n";
+    if(en.note) text += "메모: " + en.note + "\n";
+    if(en.createdAt) text += "기록 시각: " + new Date(en.createdAt).toLocaleString("ko-KR") + "\n";
+    text += "\n";
+  });
+  const blob = new Blob([text], {type:"text/plain;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "도윤이_기록장_"+todayStr()+".txt";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById("print-btn").addEventListener("click", ()=>window.print());
+
+function renderStrip(){
+  const strip = document.getElementById("strip");
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const today = todayStr();
+
+  const byDate = {};
+  entries.forEach(en=>{
+    if(!byDate[en.date]) byDate[en.date] = {has:true, discipline:false};
+    if(en.disciplineFlag) byDate[en.date].discipline = true;
+  });
+
+  let html = '<div class="strip-head"><span>'+year+'년 '+(month+1)+'월</span></div>';
+  for(let d=1; d<=daysInMonth; d++){
+    const ds = year+"-"+String(month+1).padStart(2,"0")+"-"+String(d).padStart(2,"0");
+    const info = byDate[ds];
+    let cls = "dot";
+    if(info && info.discipline) cls += " has-discipline";
+    else if(info && info.has) cls += " has-entry";
+    if(ds === today) cls += " today";
+    html += '<div class="'+cls+'" title="'+ds+'"></div>';
+  }
+  html += '<div class="legend"><span><i style="background:var(--accent)"></i>기록 있음</span><span><i style="background:var(--warn)"></i>훈육/체벌 있음</span><span><i style="background:var(--line)"></i>기록 없음</span></div>';
+  strip.innerHTML = html;
+}
+
+function renderList(){
+  const list = document.getElementById("entry-list");
+  if(entries.length === 0){
+    list.innerHTML = '<div class="section-title">지난 기록</div><div class="empty">아직 기록이 없습니다. 위에서 오늘의 기록을 남겨보세요.</div>';
+    return;
+  }
+  const sorted = [...entries].sort((a,b)=> b.date.localeCompare(a.date) || (b.createdAt||"").localeCompare(a.createdAt||""));
+  let html = '<div class="section-title">지난 기록 ('+entries.length+'건)</div>';
+  sorted.forEach(en=>{
+    html += '<div class="entry'+(en.disciplineFlag?' flagged':'')+'">';
+    html += '<div class="entry-head"><span class="entry-date">'+fmtDate(en.date)+'</span><span class="entry-time">'+(en.createdAt ? new Date(en.createdAt).toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})+' 작성' : '')+'</span></div>';
+    if(en.mood) html += '<span class="entry-mood'+(en.disciplineFlag?' flag':'')+'">'+en.mood+'</span>';
+    if(en.event) html += '<div class="entry-body">'+escapeHtml(en.event)+'</div>';
+    if(en.disciplineFlag) html += '<div class="entry-discipline">훈육/체벌: '+escapeHtml(en.disciplineDetail||"(내용 미기재)")+'</div>';
+    if(en.note) html += '<div class="entry-body" style="color:var(--ink-soft);margin-top:6px;">'+escapeHtml(en.note)+'</div>';
+    html += '<div class="entry-actions"><button data-edit="'+en.id+'">수정</button><button data-del="'+en.id+'">삭제</button></div>';
+    html += '</div>';
+  });
+  list.innerHTML = html;
+}
+
+function render(){
+  renderStrip();
+  renderList();
+}
+
+resetForm();
+</script>
+</body>
+</html>
