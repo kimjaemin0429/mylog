@@ -123,7 +123,7 @@
 <body>
 
 <div id="login-screen">
-  <h1>도윤이 기록장</h1>
+  <h1>My Log</h1>
   <p>등록된 계정으로 로그인하세요.</p>
   <input type="email" id="login-email" placeholder="이메일">
   <input type="password" id="login-pw" placeholder="비밀번호">
@@ -134,7 +134,7 @@
 <div class="wrap" id="app">
   <header>
     <div>
-      <h1>도윤이 기록장</h1>
+      <h1>My Log</h1>
       <p>매일의 모습과 있었던 일을 남겨두는 개인 기록입니다.</p>
     </div>
     <button id="logout-btn">로그아웃</button>
@@ -192,12 +192,12 @@
    Firebase 콘솔 > 프로젝트 설정 > 일반 > 내 앱 에서 확인할 수 있습니다.
    ==================================================================== */
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyBCjQIuafgq8Pw_wHTQjp8cwf8Q95qhXqw",
+  authDomain: "mylog-f194a.firebaseapp.com",
+  projectId: "mylog-f194a",
+  storageBucket: "mylog-f194a.firebasestorage.app",
+  messagingSenderId: "712810442099",
+  appId: "1:712810442099:web:6aaab546bd52775a122906"
 };
 /* ==================================================================== */
 
@@ -370,7 +370,7 @@ document.getElementById("entry-list").addEventListener("click", async (e)=>{
 
 document.getElementById("export-btn").addEventListener("click", ()=>{
   const sorted = [...entries].sort((a,b)=> a.date.localeCompare(b.date) || (a.createdAt||"").localeCompare(b.createdAt||""));
-  let text = "도윤이 기록장 전체 내보내기\n생성일: " + new Date().toLocaleString("ko-KR") + "\n\n";
+  let text = "My Log 전체 내보내기\n생성일: " + new Date().toLocaleString("ko-KR") + "\n\n";
   sorted.forEach(en=>{
     text += "──────────────────────\n";
     text += fmtDate(en.date) + (en.mood ? "  [상태: "+en.mood+"]" : "") + "\n";
@@ -384,7 +384,7 @@ document.getElementById("export-btn").addEventListener("click", ()=>{
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "도윤이_기록장_"+todayStr()+".txt";
+  a.download = "My Log_"+todayStr()+".txt";
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
