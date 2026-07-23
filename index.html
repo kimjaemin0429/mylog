@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>도윤이 기록장</title>
+<title>My Log</title>
 <style>
   :root{
     --paper:#F6F4EE;
@@ -60,6 +60,11 @@
   }
   .strip-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;grid-column:1/-1;}
   .strip-head span{font-size:13px;color:var(--ink-soft);}
+  .strip-nav{display:flex;align-items:center;gap:10px;}
+  .strip-nav button{border:1px solid var(--line);background:var(--paper);border-radius:6px;width:26px;height:26px;font-size:14px;color:var(--ink-soft);cursor:pointer;line-height:1;}
+  .strip-nav button:hover{color:var(--ink);border-color:var(--ink-soft);}
+  .strip-nav .month-label{font-size:13px;min-width:76px;text-align:center;}
+  .strip-nav .today-btn{width:auto;padding:0 10px;font-size:12px;}
   .dot{aspect-ratio:1;border-radius:3px;background:var(--line);position:relative;cursor:default;}
   .dot.has-entry{background:var(--accent);}
   .dot.has-discipline{background:var(--warn);}
@@ -187,12 +192,12 @@
    Firebase 콘솔 > 프로젝트 설정 > 일반 > 내 앱 에서 확인할 수 있습니다.
    ==================================================================== */
 const firebaseConfig = {
-  apiKey: "AIzaSyBCjQIuafgq8Pw_wHTQjp8cwf8Q95qhXqw",
-  authDomain: "mylog-f194a.firebaseapp.com",
-  projectId: "mylog-f194a",
-  storageBucket: "mylog-f194a.firebasestorage.app",
-  messagingSenderId: "712810442099",
-  appId: "1:712810442099:web:6aaab546bd52775a122906"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
 /* ==================================================================== */
 
@@ -214,6 +219,9 @@ let editingId = null;
 let selectedMood = "";
 let currentUid = null;
 let unsubscribe = null;
+const _now = new Date();
+let viewYear = _now.getFullYear();
+let viewMonth = _now.getMonth();
 
 function todayStr(){
   const d = new Date();
@@ -387,9 +395,8 @@ document.getElementById("print-btn").addEventListener("click", ()=>window.print(
 
 function renderStrip(){
   const strip = document.getElementById("strip");
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
+  const year = viewYear;
+  const month = viewMonth;
   const daysInMonth = new Date(year, month+1, 0).getDate();
   const today = todayStr();
 
@@ -399,7 +406,13 @@ function renderStrip(){
     if(en.disciplineFlag) byDate[en.date].discipline = true;
   });
 
-  let html = '<div class="strip-head"><span>'+year+'년 '+(month+1)+'월</span></div>';
+  let html = '<div class="strip-head"><div class="strip-nav">'
+    + '<button id="prev-month" aria-label="이전 달">‹</button>'
+    + '<span class="month-label">'+year+'년 '+(month+1)+'월</span>'
+    + '<button id="next-month" aria-label="다음 달">›</button>'
+    + '</div>'
+    + '<button class="strip-nav today-btn" id="goto-today">오늘</button>'
+    + '</div>';
   for(let d=1; d<=daysInMonth; d++){
     const ds = year+"-"+String(month+1).padStart(2,"0")+"-"+String(d).padStart(2,"0");
     const info = byDate[ds];
@@ -411,6 +424,22 @@ function renderStrip(){
   }
   html += '<div class="legend"><span><i style="background:var(--accent)"></i>기록 있음</span><span><i style="background:var(--warn)"></i>훈육/체벌 있음</span><span><i style="background:var(--line)"></i>기록 없음</span></div>';
   strip.innerHTML = html;
+
+  document.getElementById("prev-month").addEventListener("click", ()=>{
+    viewMonth--;
+    if(viewMonth<0){ viewMonth=11; viewYear--; }
+    renderStrip();
+  });
+  document.getElementById("next-month").addEventListener("click", ()=>{
+    viewMonth++;
+    if(viewMonth>11){ viewMonth=0; viewYear++; }
+    renderStrip();
+  });
+  document.getElementById("goto-today").addEventListener("click", ()=>{
+    viewYear = _now.getFullYear();
+    viewMonth = _now.getMonth();
+    renderStrip();
+  });
 }
 
 function renderList(){
